@@ -13,8 +13,9 @@ public class Client {
 
 	public static void main(String[] args) throws IOException, InterruptedException {
 
-		Scanner sc=new Scanner(System.in);
-		String userUrl=sc.nextLine();
+		Scanner sc = new Scanner(System.in);
+		String userUrl = sc.nextLine();
+
 		HttpClient client = HttpClient.newHttpClient();
 		HttpRequest request = HttpRequest.newBuilder().uri(URI.create(REQUEST_URL + "?url=" + userUrl)).build();
 
