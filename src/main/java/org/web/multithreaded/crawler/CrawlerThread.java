@@ -18,18 +18,19 @@ public class CrawlerThread implements Runnable {
 
 	private String url;
 	static TreeNode links;
-   
-	public CrawlerThread(String url, TreeNode links)
-	{
+	static TreeNode resultlinks = null;
+
+	public CrawlerThread(String url, TreeNode links) {
 		this.url = url;
 		this.links = links;
 	}
 
 	@Override
 	public void run() {
-		
-		System.out.println(visitPage(url));
-		
+		resultlinks = visitPage(url);
+		synchronized (this) {
+			notifyAll();
+		}
 	}
 
 	private TreeNode visitPage(String url) {
@@ -59,11 +60,11 @@ public class CrawlerThread implements Runnable {
 
 										String linkAttribute = e.attr("href");
 										links.addChild(linkAttribute);
-										unvisited.add(link);
-
+										if (toURL(link) != null)
+											unvisited.add(link);
 									} else if (link.startsWith("/")) {
-										String link1 = e.attr("href");
-										links.addChild(link1);
+										String linkAttribute = e.attr("href");
+										links.addChild(linkAttribute);
 										unvisited.add(link);
 									}
 								}
@@ -71,6 +72,7 @@ public class CrawlerThread implements Runnable {
 						}
 					}
 				}
+
 				return links;
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -98,9 +100,16 @@ public class CrawlerThread implements Runnable {
 		return u.getProtocol() + "://" + u.getHost() + ":" + u.getPort();
 	}
 
-	public static Set<String> getUnvisited() {
+	public synchronized Set<String> Unvisited() {
 
 		return unvisited;
+	}
+
+	public synchronized TreeNode getResult() throws InterruptedException {
+		while (resultlinks == null)
+			wait();
+
+		return resultlinks;
 	}
 
 }
